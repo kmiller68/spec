@@ -1,3 +1,19 @@
+(*
+ * Copyright 2016 Apple Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *)
+
 (* Decoding stream *)
 
 type stream =
@@ -433,9 +449,9 @@ let rec expr stack s =
 
 and expr_block s = List.rev (expr_block' [] s)
 and expr_block' stack s =
-  if eos s then stack else
   match peek s with
-  | None | Some (0x04 | 0x0f) -> stack
+  | None -> error s (pos s) "attempted to decode past the end of the function"
+  | Some (0x04 | 0x0f) -> stack
   | _ ->
     let pos = pos s in
     let e', stack' = expr stack s in
@@ -572,9 +588,11 @@ let local s =
   Lib.List.make n t
 
 let code s =
-  let locals = List.flatten (vec local s) in
   let size = vu s in
-  let body = expr_block (substream s (pos s + size)) in
+  let s' = substream s (pos s + size) in
+  let locals = List.flatten (vec local s') in
+  let body = expr_block s' in
+  expect 0x0f s "`end` opcode expected";
   {locals; body; ftype = Source.((-1) @@ Source.no_region)}
 
 let code_section s =
