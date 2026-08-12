@@ -111,3 +111,5 @@ such as the :ref:`binary representation <aux-fbits>` and :ref:`rounding <aux-iee
    The aforementioned standards are the authoritative source of all respective definitions.
    Formalizations given in this specification are intended to match these definitions.
    Any discrepancy in the syntax or semantics described is to be considered an error.
+
+MARKER 2: a second difference, far from the first, for testing diff navigation.
