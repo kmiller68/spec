@@ -65,8 +65,10 @@ jobs:
           fi
           # A copy already on the site is left in place unless a newer baseline
           # is rendered below.
-          published=$(gh api "repos/$REPOSITORY/contents/$BASELINE_STAMP?ref=gh-pages" \
-            --jq .content 2>/dev/null | base64 -d | tr -d '[:space:]') || published=''
+          published=''
+          if encoded=$(gh api "repos/$REPOSITORY/contents/$BASELINE_STAMP?ref=gh-pages" --jq .content 2>/dev/null); then
+            published=$(printf '%s' "$encoded" | base64 -d | tr -d '[:space:]')
+          fi
           parent=$(gh api "repos/$REPOSITORY" --jq '.parent.full_name // ""' 2>/dev/null) || parent=''
           if [ -z "$parent" ]; then
             echo "::warning::Could not determine the parent repo, not rendering an upstream copy."
